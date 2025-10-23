@@ -26,6 +26,7 @@ def scrape_url(
     output_format: str = "rich",
     output_file: Optional[str] = None,
     timeout: int = 30,
+    verbose: bool = False,
 ) -> None:
     """
     Scrape a URL and output the content.
@@ -36,24 +37,29 @@ def scrape_url(
         output_format: Output format (rich, json, text, markdown)
         output_file: Optional file to save output to
         timeout: Request timeout in seconds
+        verbose: Show detailed progress messages
     """
     try:
         # Initialize scraper
         scraper = WAFBypassScraper(browser=browser, timeout=timeout)
 
         # Fetch content
-        print(f"Fetching: {url}", file=sys.stderr)
-        print(f"Browser: {browser}", file=sys.stderr)
+        if verbose:
+            print(f"Fetching: {url}", file=sys.stderr)
+            print(f"Browser: {browser}", file=sys.stderr)
         html_content = scraper.fetch_text(url)
-        print("Fetch successful!", file=sys.stderr)
+        if verbose:
+            print("Fetch successful!", file=sys.stderr)
 
         # Parse content based on URL type
         if is_reddit_url(url):
-            print("Parsing Reddit content...", file=sys.stderr)
+            if verbose:
+                print("Parsing Reddit content...", file=sys.stderr)
             parser = RedditParser(html_content)
             data = parser.parse_thread(url)
         else:
-            print("Parsing generic content with Trafilatura...", file=sys.stderr)
+            if verbose:
+                print("Parsing generic content with Trafilatura...", file=sys.stderr)
             parser = TrafilaturaParser(html_content, url=url)
             data = parser.extract_content()
 
@@ -66,7 +72,8 @@ def scrape_url(
             output = formatter.format(data)
             if output_file:
                 Path(output_file).write_text(output, encoding="utf-8")
-                print(f"\nSaved to: {output_file}", file=sys.stderr)
+                if verbose:
+                    print(f"\nSaved to: {output_file}", file=sys.stderr)
             else:
                 print(output)
         elif output_format == "text":
@@ -74,7 +81,8 @@ def scrape_url(
             output = formatter.format(data)
             if output_file:
                 Path(output_file).write_text(output, encoding="utf-8")
-                print(f"\nSaved to: {output_file}", file=sys.stderr)
+                if verbose:
+                    print(f"\nSaved to: {output_file}", file=sys.stderr)
             else:
                 print(output)
         elif output_format == "markdown":
@@ -82,7 +90,8 @@ def scrape_url(
             output = formatter.format(data)
             if output_file:
                 Path(output_file).write_text(output, encoding="utf-8")
-                print(f"\nSaved to: {output_file}", file=sys.stderr)
+                if verbose:
+                    print(f"\nSaved to: {output_file}", file=sys.stderr)
             else:
                 print(output)
 
@@ -146,6 +155,12 @@ Supported browsers:
     )
 
     parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show detailed progress messages",
+    )
+
+    parser.add_argument(
         "--list-browsers",
         action="store_true",
         help="List supported browsers and exit",
@@ -171,6 +186,7 @@ Supported browsers:
         output_format=args.format,
         output_file=args.output,
         timeout=args.timeout,
+        verbose=args.verbose,
     )
 
 

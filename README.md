@@ -102,12 +102,18 @@ cli-web-scrapper https://www.reddit.com/r/programming/comments/...
 cli-web-scrapper -f json -o output.json https://protected-site.com
 ```
 
+**With Verbose Output** (show progress messages):
+
+```bash
+cli-web-scrapper --verbose -f markdown -o docs.md https://example.com
+```
+
 ## Command-Line Options
 
 ```
-usage: cli.py [-h] [-b BROWSER] [-f {rich,json,text,markdown}] [-o FILE]
-              [-t TIMEOUT] [--list-browsers] [--version]
-              url
+usage: cli-web-scrapper [-h] [-b BROWSER] [-f {rich,json,text,markdown}]
+                        [-o FILE] [-t TIMEOUT] [--verbose] [--list-browsers]
+                        [--version] url
 
 positional arguments:
   url                   URL to scrape
@@ -122,8 +128,9 @@ options:
                         Output file (default: stdout)
   -t TIMEOUT, --timeout TIMEOUT
                         Request timeout in seconds (default: 30)
+  --verbose             Show detailed progress messages
   --list-browsers       List supported browsers and exit
-  --version            show program's version number and exit
+  --version             show program's version number and exit
 ```
 
 ## Supported Browsers
