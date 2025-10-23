@@ -26,7 +26,13 @@ uv sync
 Scrape any website with rich terminal output:
 
 ```bash
-./start.sh https://docs.claude.com/en/docs/claude-code/skills
+cli-web-scrapper https://docs.claude.com/en/docs/claude-code/skills
+```
+
+Or use the start script:
+
+```bash
+./start.sh https://example.com
 ```
 
 Or use the Python module directly:
@@ -40,25 +46,25 @@ uv run python -m waf_bypass_scraper.cli https://example.com
 **Rich Format (Default)** - Beautiful terminal output with colors and formatting:
 
 ```bash
-./start.sh https://example.com
+cli-web-scrapper https://example.com
 ```
 
 **Markdown** - Save clean documentation:
 
 ```bash
-./start.sh -f markdown -o docs.md https://example.com
+cli-web-scrapper -f markdown -o docs.md https://example.com
 ```
 
 **JSON** - Structured data with metadata:
 
 ```bash
-./start.sh -f json -o data.json https://example.com
+cli-web-scrapper -f json -o data.json https://example.com
 ```
 
 **Plain Text** - Clean, readable text:
 
 ```bash
-./start.sh -f text https://example.com
+cli-web-scrapper -f text https://example.com
 ```
 
 ### Browser Impersonation
@@ -67,13 +73,13 @@ Use different browsers to bypass specific protections:
 
 ```bash
 # Safari browser
-./start.sh -b safari https://example.com
+cli-web-scrapper -b safari https://example.com
 
 # Specific Chrome version
-./start.sh -b chrome124 https://example.com
+cli-web-scrapper -b chrome124 https://example.com
 
 # List all available browsers
-./start.sh --list-browsers
+cli-web-scrapper --list-browsers
 ```
 
 ### Examples
@@ -81,19 +87,19 @@ Use different browsers to bypass specific protections:
 **Scrape Documentation**:
 
 ```bash
-./start.sh -f markdown -o api-docs.md https://docs.example.com/api
+cli-web-scrapper -f markdown -o api-docs.md https://docs.example.com/api
 ```
 
 **Reddit Thread**:
 
 ```bash
-./start.sh https://www.reddit.com/r/programming/comments/...
+cli-web-scrapper https://www.reddit.com/r/programming/comments/...
 ```
 
 **Protected Website with JSON Output**:
 
 ```bash
-./start.sh -f json -o output.json https://protected-site.com
+cli-web-scrapper -f json -o output.json https://protected-site.com
 ```
 
 ## Command-Line Options

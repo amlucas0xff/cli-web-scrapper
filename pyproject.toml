@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-waf-scraper = "waf_bypass_scraper.cli:main"
+cli-web-scrapper = "waf_bypass_scraper.cli:main"
 
 [build-system]
 requires = ["hatchling"]
