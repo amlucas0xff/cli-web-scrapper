@@ -1,14 +1,15 @@
 # WAF Bypass Scraper
 
-A Python CLI tool to read WAF and Bot Management protected websites using browser fingerprint impersonation via `curl_cffi`.
+A Python CLI tool for scraping WAF and Bot Management protected websites using intelligent browser impersonation and content extraction.
 
 ## Features
 
-- Browser fingerprint impersonation to bypass WAF/Bot protection
-- Support for multiple browsers (Chrome, Safari, Firefox, Edge)
-- Reddit thread parsing with comments extraction
-- Multiple output formats: Rich console, JSON, Plain text, Markdown
-- Easy-to-use CLI interface
+- **WAF Bypass**: Browser fingerprint impersonation via `curl_cffi` to bypass Cloudflare, DataDome, and other protections
+- **Intelligent Content Extraction**: Uses Trafilatura to extract clean content, removing navigation, ads, and boilerplate
+- **Reddit Specialization**: Dedicated parser for Reddit threads with comments extraction
+- **Multiple Output Formats**: Rich console, JSON, Plain text, Markdown
+- **Metadata Extraction**: Automatically extracts title, author, date, description, and language
+- **Link Preservation**: Converts relative URLs to absolute URLs
 
 ## Installation
 
@@ -20,35 +21,41 @@ uv sync
 
 ## Usage
 
-### Basic Usage
+### Quick Start
 
-Scrape a Reddit thread with rich formatting:
+Scrape any website with rich terminal output:
 
 ```bash
-./start.sh https://www.reddit.com/r/LocalLLaMA/comments/1oe0y11/i_found_a_perfect_coder_model_for_my_rtx409064gb/
+./start.sh https://docs.claude.com/en/docs/claude-code/skills
 ```
 
-Or using uv directly:
+Or use the Python module directly:
 
 ```bash
-uv run waf_bypass_scraper/cli.py https://www.reddit.com/r/LocalLLaMA/comments/...
+uv run python -m waf_bypass_scraper.cli https://example.com
 ```
 
 ### Output Formats
 
-Save as JSON:
+**Rich Format (Default)** - Beautiful terminal output with colors and formatting:
 
 ```bash
-./start.sh -f json -o output.json https://example.com
+./start.sh https://example.com
 ```
 
-Save as Markdown:
+**Markdown** - Save clean documentation:
 
 ```bash
-./start.sh -f markdown -o thread.md https://reddit.com/r/...
+./start.sh -f markdown -o docs.md https://example.com
 ```
 
-Plain text output:
+**JSON** - Structured data with metadata:
+
+```bash
+./start.sh -f json -o data.json https://example.com
+```
+
+**Plain Text** - Clean, readable text:
 
 ```bash
 ./start.sh -f text https://example.com
@@ -56,25 +63,40 @@ Plain text output:
 
 ### Browser Impersonation
 
-Use Safari instead of Chrome:
+Use different browsers to bypass specific protections:
 
 ```bash
+# Safari browser
 ./start.sh -b safari https://example.com
-```
 
-Use specific browser version:
-
-```bash
+# Specific Chrome version
 ./start.sh -b chrome124 https://example.com
-```
 
-List all supported browsers:
-
-```bash
+# List all available browsers
 ./start.sh --list-browsers
 ```
 
-### Command-line Options
+### Examples
+
+**Scrape Documentation**:
+
+```bash
+./start.sh -f markdown -o api-docs.md https://docs.example.com/api
+```
+
+**Reddit Thread**:
+
+```bash
+./start.sh https://www.reddit.com/r/programming/comments/...
+```
+
+**Protected Website with JSON Output**:
+
+```bash
+./start.sh -f json -o output.json https://protected-site.com
+```
+
+## Command-Line Options
 
 ```
 usage: cli.py [-h] [-b BROWSER] [-f {rich,json,text,markdown}] [-o FILE]
@@ -100,38 +122,78 @@ options:
 
 ## Supported Browsers
 
-- Chrome: chrome, chrome99, chrome100, chrome101, chrome104, chrome107, chrome110, chrome116, chrome119, chrome120, chrome123, chrome124
-- Safari: safari, safari15_3, safari15_5, safari17_0, safari17_2_1, safari18_0
-- Edge: edge, edge99, edge101
-- Firefox: firefox, firefox109
+- **Chrome**: chrome, chrome99, chrome100, chrome101, chrome104, chrome107, chrome110, chrome116, chrome119, chrome120, chrome123, chrome124
+- **Safari**: safari, safari15_3, safari15_5, safari17_0, safari17_2_1, safari18_0
+- **Edge**: edge, edge99, edge101
+- **Firefox**: firefox, firefox109
 
 ## How It Works
 
-This tool uses `curl_cffi`, which impersonates browser TLS and HTTP/2 fingerprints to bypass WAF and bot detection systems. It:
+This tool uses a two-layer approach for reliable web scraping:
 
-1. Fetches the webpage using browser impersonation
-2. Parses the HTML content (with special handling for Reddit)
-3. Formats the output in your preferred format
+### 1. WAF Bypass Layer (curl_cffi)
+- Impersonates browser TLS fingerprints
+- Mimics HTTP/2 behavior
+- Bypasses Cloudflare, DataDome, and other bot protection systems
 
-## Examples
+### 2. Content Extraction Layer (Trafilatura)
+- Intelligently identifies main content
+- Removes navigation, ads, footers, and boilerplate
+- Extracts metadata (title, author, date, description)
+- Preserves formatting and links
+- Handles 500+ languages
 
-### Reddit Thread
+### Process Flow
 
-```bash
-./start.sh https://www.reddit.com/r/LocalLLaMA/comments/1oe0y11/i_found_a_perfect_coder_model_for_my_rtx409064gb/
+```
+URL → curl_cffi (bypass WAF) → HTML → Trafilatura (extract content) → Formatted Output
 ```
 
-### Save Reddit Thread as Markdown
+## Output Structure
 
-```bash
-./start.sh -f markdown -o discussion.md https://www.reddit.com/r/programming/comments/...
+### JSON Format
+```json
+{
+  "title": "Page Title",
+  "author": "Author Name",
+  "date": "2024-01-01",
+  "url": "https://example.com",
+  "description": "Page description",
+  "text": "Plain text content...",
+  "markdown": "# Markdown formatted content...",
+  "links": ["https://link1.com", "https://link2.com"],
+  "language": "en"
+}
 ```
 
-### Generic Website with JSON Output
+### Markdown Format
+```markdown
+# Page Title
 
-```bash
-./start.sh -f json -o data.json https://protected-site.com
+**Author:** Author Name
+**Date:** 2024-01-01
+**URL:** https://example.com
+
+> Page description
+
+## Content
+
+Main content with formatting, links, and structure preserved...
 ```
+
+## Use Cases
+
+- **Documentation Archiving**: Save online documentation as clean markdown files
+- **Reddit Analysis**: Extract Reddit threads with comments for analysis
+- **Research**: Collect articles from paywalled or protected sites
+- **Content Aggregation**: Scrape multiple sources into structured JSON
+- **Knowledge Base**: Build offline documentation from various sources
+
+## Performance
+
+- Battle-tested extraction engine used by HuggingFace, IBM, Microsoft Research, Stanford
+- Highest F1 score (0.937) among open-source extractors
+- Fast and efficient with minimal dependencies
 
 ## License
 

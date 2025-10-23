@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from .scraper import WAFBypassScraper
-from .parsers import RedditParser, GenericParser
+from .parsers import RedditParser, GenericParser, TrafilaturaParser
 from .formatters import (
     JSONFormatter,
     PlainTextFormatter,
@@ -53,13 +53,9 @@ def scrape_url(
             parser = RedditParser(html_content)
             data = parser.parse_thread(url)
         else:
-            print("Parsing generic content...", file=sys.stderr)
-            parser = GenericParser(html_content)
-            data = {
-                "title": parser.extract_title(),
-                "text": parser.extract_text(),
-                "links": parser.extract_links(),
-            }
+            print("Parsing generic content with Trafilatura...", file=sys.stderr)
+            parser = TrafilaturaParser(html_content, url=url)
+            data = parser.extract_content()
 
         # Format output
         if output_format == "rich":

@@ -7,7 +7,7 @@ from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.text import Text
 
-from .parsers import RedditThread
+from .parsers import RedditThread, TrafilaturaContent
 
 
 class OutputFormatter:
@@ -47,6 +47,8 @@ class PlainTextFormatter(OutputFormatter):
         """Format data as plain text."""
         if isinstance(data, RedditThread):
             return self._format_reddit_thread(data)
+        elif isinstance(data, TrafilaturaContent):
+            return self._format_trafilatura_content(data)
         return str(data)
 
     def _format_reddit_thread(self, thread: RedditThread) -> str:
@@ -83,6 +85,33 @@ class PlainTextFormatter(OutputFormatter):
 
         return "\n".join(lines)
 
+    def _format_trafilatura_content(self, content: TrafilaturaContent) -> str:
+        """Format Trafilatura content as plain text."""
+        lines = []
+        lines.append("=" * 80)
+        if content.title:
+            lines.append(f"TITLE: {content.title}")
+        if content.author:
+            lines.append(f"AUTHOR: {content.author}")
+        if content.date:
+            lines.append(f"DATE: {content.date}")
+        if content.url:
+            lines.append(f"URL: {content.url}")
+        if content.language:
+            lines.append(f"LANGUAGE: {content.language}")
+        lines.append("=" * 80)
+
+        if content.description:
+            lines.append(f"\nDESCRIPTION:\n{content.description}\n")
+
+        if content.text:
+            lines.append("\nCONTENT:")
+            lines.append("-" * 80)
+            lines.append(content.text)
+            lines.append("-" * 80)
+
+        return "\n".join(lines)
+
 
 class RichFormatter(OutputFormatter):
     """Rich formatted console output."""
@@ -95,6 +124,8 @@ class RichFormatter(OutputFormatter):
         """Format and print data using Rich."""
         if isinstance(data, RedditThread):
             self._format_reddit_thread(data)
+        elif isinstance(data, TrafilaturaContent):
+            self._format_trafilatura_content(data)
         else:
             self.console.print(str(data))
 
@@ -139,6 +170,42 @@ class RichFormatter(OutputFormatter):
                 )
                 self.console.print()
 
+    def _format_trafilatura_content(self, content: TrafilaturaContent) -> None:
+        """Format Trafilatura content with Rich formatting."""
+        # Header with metadata
+        header_text = Text()
+        if content.title:
+            header_text.append(content.title, style="bold cyan")
+
+        metadata_parts = []
+        if content.author:
+            metadata_parts.append(f"Author: {content.author}")
+        if content.date:
+            metadata_parts.append(f"Date: {content.date}")
+        if content.language:
+            metadata_parts.append(f"Language: {content.language}")
+
+        if metadata_parts:
+            header_text.append("\n\n", style="dim")
+            header_text.append(" • ".join(metadata_parts), style="dim")
+
+        self.console.print(
+            Panel(header_text, title="Web Content", border_style="cyan")
+        )
+
+        # Description
+        if content.description:
+            self.console.print("\n[bold]Description:[/bold]")
+            self.console.print(Panel(content.description, border_style="dim"))
+
+        # Main content as markdown
+        if content.markdown:
+            self.console.print("\n[bold]Content:[/bold]")
+            self.console.print(Markdown(content.markdown))
+        elif content.text:
+            self.console.print("\n[bold]Content:[/bold]")
+            self.console.print(Panel(content.text, border_style="dim"))
+
 
 class MarkdownFormatter(OutputFormatter):
     """Markdown output formatter."""
@@ -147,6 +214,8 @@ class MarkdownFormatter(OutputFormatter):
         """Format data as Markdown."""
         if isinstance(data, RedditThread):
             return self._format_reddit_thread(data)
+        elif isinstance(data, TrafilaturaContent):
+            return self._format_trafilatura_content(data)
         return str(data)
 
     def _format_reddit_thread(self, thread: RedditThread) -> str:
@@ -181,5 +250,40 @@ class MarkdownFormatter(OutputFormatter):
                 lines.append("")
                 lines.append(comment.text)
                 lines.append("\n---\n")
+
+        return "\n".join(lines)
+
+    def _format_trafilatura_content(self, content: TrafilaturaContent) -> str:
+        """Format Trafilatura content as Markdown."""
+        lines = []
+
+        # Title
+        if content.title:
+            lines.append(f"# {content.title}\n")
+
+        # Metadata
+        metadata = []
+        if content.author:
+            metadata.append(f"**Author:** {content.author}")
+        if content.date:
+            metadata.append(f"**Date:** {content.date}")
+        if content.url:
+            metadata.append(f"**URL:** {content.url}")
+        if content.language:
+            metadata.append(f"**Language:** {content.language}")
+
+        if metadata:
+            lines.append("  \n".join(metadata))
+            lines.append("")
+
+        # Description
+        if content.description:
+            lines.append(f"> {content.description}\n")
+
+        # Main content - use markdown from Trafilatura
+        if content.markdown:
+            lines.append(content.markdown)
+        elif content.text:
+            lines.append(content.text)
 
         return "\n".join(lines)

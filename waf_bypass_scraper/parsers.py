@@ -4,6 +4,9 @@ from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
 import re
+import json
+from trafilatura import extract
+from trafilatura.metadata import Document
 
 
 @dataclass
@@ -354,3 +357,126 @@ class GenericParser:
         if title:
             return title.get_text(strip=True)
         return "No title found"
+
+
+@dataclass
+class TrafilaturaContent:
+    """Represents content extracted by Trafilatura."""
+
+    title: Optional[str]
+    author: Optional[str]
+    date: Optional[str]
+    url: Optional[str]
+    description: Optional[str]
+    text: str
+    markdown: str
+    links: List[str]
+    language: Optional[str]
+
+
+class TrafilaturaParser:
+    """
+    Intelligent HTML parser using Trafilatura for content extraction.
+
+    This parser uses Trafilatura to intelligently extract main content,
+    removing boilerplate, navigation, ads, and other non-content elements.
+    """
+
+    def __init__(self, html_content: str, url: Optional[str] = None):
+        """
+        Initialize parser with HTML content.
+
+        Args:
+            html_content: Raw HTML content
+            url: Original URL (used for converting relative links to absolute)
+        """
+        self.html_content = html_content
+        self.url = url
+
+    def extract_content(self) -> TrafilaturaContent:
+        """
+        Extract main content from page using Trafilatura.
+
+        Returns:
+            TrafilaturaContent object with extracted data
+        """
+        # Extract text content
+        text_content = extract(
+            self.html_content,
+            output_format="txt",
+            include_comments=False,
+            url=self.url,
+        ) or ""
+
+        # Extract markdown with formatting and links
+        markdown_content = extract(
+            self.html_content,
+            output_format="markdown",
+            include_formatting=True,
+            include_links=True,
+            include_images=True,
+            url=self.url,
+        ) or ""
+
+        # Extract metadata
+        metadata = self._extract_metadata()
+
+        # Extract links
+        links = self._extract_links()
+
+        return TrafilaturaContent(
+            title=metadata.get("title"),
+            author=metadata.get("author"),
+            date=metadata.get("date"),
+            url=metadata.get("url") or self.url,
+            description=metadata.get("description"),
+            text=text_content,
+            markdown=markdown_content,
+            links=links,
+            language=metadata.get("language"),
+        )
+
+    def _extract_metadata(self) -> Dict[str, Optional[str]]:
+        """Extract metadata from the HTML content."""
+        from trafilatura import bare_extraction
+
+        # Use bare_extraction to get metadata
+        result = bare_extraction(
+            self.html_content,
+            url=self.url,
+            with_metadata=True,
+        )
+
+        if result:
+            return {
+                "title": result.get("title"),
+                "author": result.get("author"),
+                "date": result.get("date"),
+                "url": result.get("url"),
+                "description": result.get("description"),
+                "language": result.get("language"),
+            }
+
+        return {
+            "title": None,
+            "author": None,
+            "date": None,
+            "url": None,
+            "description": None,
+            "language": None,
+        }
+
+    def _extract_links(self) -> List[str]:
+        """Extract all links from content."""
+        from trafilatura import bare_extraction
+
+        result = bare_extraction(
+            self.html_content,
+            include_links=True,
+            url=self.url,
+        )
+
+        if result and "links" in result:
+            return result.get("links", [])
+
+        return []
