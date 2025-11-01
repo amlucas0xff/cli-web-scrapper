@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg width="810.00" height="83.00" xmlns="http://www.w3.org/2000/svg">
+<svg width="910.00" height="167.00" xmlns="http://www.w3.org/2000/svg">
 <style>
 @font-face {
 	font-family: &apos;JetBrains Mono&apos;;
@@ -8,9 +8,8 @@
 	font-weight: normal;
 	font-style: normal;
 }
-</style><rect width="810.00" height="83.00" fill="#171717" x="0.00px" y="0.00px"/>
+</style><rect width="910.00" height="167.00" fill="#171717" x="0.00px" y="0.00px"/>
 <g font-family="JetBrains Mono" font-size="14.00px" fill="#c4c4c4" clip-path="url(#terminalMask)">
-<text x="20.00px" y="51.80px" xml:space="preserve">cli-web-scrapper https://reddit.com/r/LocalLLaMA/comments/1abc123/latest_llama_benchmarks
-</text>
+<text x="20.00px" y="51.80px" xml:space="preserve"><tspan xml:space="preserve">────────────────────────────────────────────────────────────────────────────────</tspan></text><text x="20.00px" y="68.60px" xml:space="preserve"><tspan xml:space="preserve" fill="#D3E561">**</tspan><tspan xml:space="preserve"/><tspan xml:space="preserve" fill="#D3E561">URL:</tspan><tspan xml:space="preserve"/><tspan xml:space="preserve" fill="#D3E561">**</tspan><tspan xml:space="preserve"> https://example.com</tspan></text><text x="20.00px" y="85.40px" xml:space="preserve"/><text x="20.00px" y="102.20px" xml:space="preserve"><tspan xml:space="preserve">This domain is for use in documentation examples without needing permission. Avoid use in operations.</tspan></text><text x="20.00px" y="119.00px" xml:space="preserve"><tspan xml:space="preserve">Learn more</tspan></text><text x="20.00px" y="135.80px" xml:space="preserve"><tspan xml:space="preserve">────────────────────────────────────────────────────────────────────────────────</tspan></text>
 </g>
 <svg x="0.00px" y="0.00px"><circle cx="13.50" cy="12.00" r="5.50" fill="#FF5A54"/><circle cx="32.50" cy="12.00" r="5.50" fill="#E6BF29"/><circle cx="51.50" cy="12.00" r="5.50" fill="#52C12B"/></svg></svg>
