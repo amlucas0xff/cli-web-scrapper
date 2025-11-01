@@ -1,5 +1,6 @@
 """Parsers for different website types."""
 
+import sys
 from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
@@ -205,7 +206,7 @@ class RedditParser:
             if filtered:
                 comment_elements = filtered
 
-        for comment_elem in comment_elements:
+        for idx, comment_elem in enumerate(comment_elements, start=1):
             try:
                 # Extract comment author
                 author = self._extract_comment_author(comment_elem)
@@ -231,8 +232,9 @@ class RedditParser:
                         timestamp=timestamp,
                     )
                 )
-            except Exception:
-                # Skip problematic comments
+            except Exception as e:
+                # Warn about problematic comments but continue parsing
+                print(f"Warning: Failed to parse comment #{idx}: {type(e).__name__}: {e}", file=sys.stderr)
                 continue
 
         return comments

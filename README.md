@@ -11,6 +11,26 @@ A Python CLI tool for scraping WAF and Bot Management protected websites using i
 - **Metadata Extraction**: Automatically extracts title, author, date, description, and language
 - **Link Preservation**: Converts relative URLs to absolute URLs
 
+## Legal Notice
+
+**IMPORTANT: This tool is intended for authorized testing, research, and educational purposes only.**
+
+Users are solely responsible for:
+- Compliance with website Terms of Service and robots.txt directives
+- Respecting rate limits and avoiding server overload
+- Compliance with applicable laws including CFAA, GDPR, and data protection regulations
+- Obtaining proper authorization before testing security controls
+- Respecting intellectual property and copyright laws
+
+**The authors assume no liability for misuse of this tool.** Web scraping and WAF bypass techniques should only be used:
+- On websites you own or control
+- With explicit written permission from the website owner
+- For authorized security testing and penetration testing
+- For academic research with proper ethical approval
+- In accordance with applicable laws and regulations
+
+Unauthorized access to computer systems is illegal in most jurisdictions. Use responsibly.
+
 ## Installation
 
 Install dependencies using uv:

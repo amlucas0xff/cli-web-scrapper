@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from curl_cffi.requests import RequestsError
+
 from .scraper import WAFBypassScraper
 from .parsers import RedditParser, GenericParser, TrafilaturaParser
 from .formatters import (
@@ -95,9 +97,15 @@ def scrape_url(
             else:
                 print(output)
 
-    except Exception as e:
+    except RequestsError as e:
+        print(f"Network error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except (ValueError, OSError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user", file=sys.stderr)
+        sys.exit(130)
 
 
 def main():
@@ -125,7 +133,7 @@ Supported browsers:
         """,
     )
 
-    parser.add_argument("url", help="URL to scrape")
+    parser.add_argument("url", nargs="?", help="URL to scrape")
 
     parser.add_argument(
         "-b",
@@ -178,6 +186,10 @@ Supported browsers:
         for browser in WAFBypassScraper.SUPPORTED_BROWSERS:
             print(f"  - {browser}")
         sys.exit(0)
+
+    # Validate URL is provided for scraping
+    if not args.url:
+        parser.error("the following arguments are required: url")
 
     # Scrape URL
     scrape_url(
