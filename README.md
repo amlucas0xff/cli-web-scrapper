@@ -104,28 +104,29 @@ cli-web-scrapper --list-browsers
 
 ### Examples
 
-**Scrape Documentation**:
+**Scrape Reddit Thread** (AI/LLM discussions):
+
+![Reddit Example](docs/images/example-reddit.svg)
+
+**Save Documentation as Markdown**:
+
+![Markdown Example](docs/images/example-markdown.svg)
+
+**Browser Impersonation with Verbose Output**:
+
+![Browser Example](docs/images/example-browser.svg)
+
+**More Examples**:
 
 ```bash
-cli-web-scrapper -f markdown -o api-docs.md https://docs.example.com/api
-```
-
-**Reddit Thread**:
-
-```bash
-cli-web-scrapper https://www.reddit.com/r/programming/comments/...
-```
-
-**Protected Website with JSON Output**:
-
-```bash
+# Protected website with JSON output
 cli-web-scrapper -f json -o output.json https://protected-site.com
-```
 
-**With Verbose Output** (show progress messages):
+# Specific Chrome version for stubborn WAFs
+cli-web-scrapper -b chrome124 https://example.com
 
-```bash
-cli-web-scrapper --verbose -f markdown -o docs.md https://example.com
+# Plain text extraction
+cli-web-scrapper -f text https://blog.example.com/article
 ```
 
 ## Command-Line Options
