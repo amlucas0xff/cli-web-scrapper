@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg width="701.67" height="755.00" xmlns="http://www.w3.org/2000/svg">
+<svg width="701.67" height="738.00" xmlns="http://www.w3.org/2000/svg">
 <style>
 @font-face {
 	font-family: &apos;JetBrains Mono&apos;;
@@ -8,13 +8,12 @@
 	font-weight: normal;
 	font-style: normal;
 }
-</style><rect width="701.67" height="755.00" fill="#171717" x="0.00px" y="0.00px"/>
+</style><rect width="701.67" height="738.00" fill="#171717" x="0.00px" y="0.00px"/>
 <g font-family="JetBrains Mono" font-size="14.00px" fill="#c4c4c4" clip-path="url(#terminalMask)">
-<rect id="&apos;" x="36ch" y="26.650000em" width="1ch" height="1.2em" fill="#f05b5b"/>
-<text x="20.00px" y="51.80px" xml:space="preserve">usage: cli-web-scrapper <tspan fill="#ff7f83">[</tspan>-h<tspan fill="#ff7f83">]</tspan> <tspan fill="#ff7f83">[</tspan>-b BROWSER<tspan fill="#ff7f83">]</tspan> <tspan fill="#ff7f83">[</tspan>-f <tspan fill="#ff7f83">{</tspan>rich,json,text,markdown<tspan fill="#ff7f83">}]</tspan>
-</text><text x="20.00px" y="68.60px" xml:space="preserve">                        <tspan fill="#ff7f83">[</tspan>-o FILE<tspan fill="#ff7f83">]</tspan> <tspan fill="#ff7f83">[</tspan>-t TIMEOUT<tspan fill="#ff7f83">]</tspan> <tspan fill="#ff7f83">[</tspan>--verbose<tspan fill="#ff7f83">]</tspan> <tspan fill="#ff7f83">[</tspan>--list-browsers<tspan fill="#ff7f83">]</tspan>
-</text><text x="20.00px" y="85.40px" xml:space="preserve">                        <tspan fill="#ff7f83">[</tspan>--version<tspan fill="#ff7f83">]</tspan>
-</text><text x="20.00px" y="102.20px" xml:space="preserve">                        <tspan fill="#ff7f83">[</tspan>url<tspan fill="#ff7f83">]</tspan>
+<text x="20.00px" y="51.80px" xml:space="preserve">usage: cli-web-scrapper [-h] [-b BROWSER] [-f {rich,json,text,markdown}]
+</text><text x="20.00px" y="68.60px" xml:space="preserve">                        [-o FILE] [-t TIMEOUT] [--verbose] [--list-browsers]
+</text><text x="20.00px" y="85.40px" xml:space="preserve">                        [--version]
+</text><text x="20.00px" y="102.20px" xml:space="preserve">                        url
 </text><text x="20.00px" y="119.00px" xml:space="preserve">
 </text><text x="20.00px" y="135.80px" xml:space="preserve">Scrape WAF/Bot protected websites using browser impersonation
 </text><text x="20.00px" y="152.60px" xml:space="preserve">
@@ -22,36 +21,35 @@
 </text><text x="20.00px" y="186.20px" xml:space="preserve">  url                   URL to scrape
 </text><text x="20.00px" y="203.00px" xml:space="preserve">
 </text><text x="20.00px" y="219.80px" xml:space="preserve">options:
-</text><text x="20.00px" y="236.60px" xml:space="preserve">  -h, --help            show this <tspan fill="#ff7cdb">help</tspan> message and <tspan fill="#ff7cdb">exit</tspan>
-</text><text x="20.00px" y="253.40px" xml:space="preserve">  -b BROWSER, --browser BROWSER
-</text><text x="20.00px" y="270.20px" xml:space="preserve">                        Browser to impersonate <tspan fill="#ff7f83">(</tspan>default: chrome<tspan fill="#ff7f83">)</tspan>
-</text><text x="20.00px" y="287.00px" xml:space="preserve">  -f <tspan fill="#ff7f83">{</tspan>rich,json,text,markdown<tspan fill="#ff7f83">}</tspan>, --format <tspan fill="#ff7f83">{</tspan>rich,json,text,markdown<tspan fill="#ff7f83">}</tspan>
-</text><text x="20.00px" y="303.80px" xml:space="preserve">                        Output format <tspan fill="#ff7f83">(</tspan>default: rich<tspan fill="#ff7f83">)</tspan>
-</text><text x="20.00px" y="320.60px" xml:space="preserve">  -o FILE, --output FILE
-</text><text x="20.00px" y="337.40px" xml:space="preserve">                        Output file <tspan fill="#ff7f83">(</tspan>default: stdout<tspan fill="#ff7f83">)</tspan>
-</text><text x="20.00px" y="354.20px" xml:space="preserve">  -t TIMEOUT, --timeout TIMEOUT
-</text><text x="20.00px" y="371.00px" xml:space="preserve">                        Request timeout in seconds <tspan fill="#ff7f83">(</tspan>default: 30<tspan fill="#ff7f83">)</tspan>
-</text><text x="20.00px" y="387.80px" xml:space="preserve">  --verbose             Show detailed progress messages
-</text><text x="20.00px" y="404.60px" xml:space="preserve">  --list-browsers       List supported browsers and <tspan fill="#ff7cdb">exit</tspan>
-</text><text x="20.00px" y="421.40px" xml:space="preserve">  --version             show program<tspan fill="#f1f1f1">&apos;</tspan>s version number and <tspan fill="#ff7cdb">exit</tspan>
-</text><text x="20.00px" y="438.20px" xml:space="preserve">
-</text><text x="20.00px" y="455.00px" xml:space="preserve">Examples:
-</text><text x="20.00px" y="471.80px" xml:space="preserve">  <tspan fill="#676767"># Scrape Reddit thread with rich formatting</tspan>
-</text><text x="20.00px" y="488.60px" xml:space="preserve">  waf-scraper https://www.reddit.com/r/LocalLLaMA/comments/1oe0y11/...
-</text><text x="20.00px" y="505.40px" xml:space="preserve">
-</text><text x="20.00px" y="522.20px" xml:space="preserve">  <tspan fill="#676767"># Scrape and save as JSON</tspan>
-</text><text x="20.00px" y="539.00px" xml:space="preserve">  waf-scraper -f json -o output.json https://example.com
-</text><text x="20.00px" y="555.80px" xml:space="preserve">
-</text><text x="20.00px" y="572.60px" xml:space="preserve">  <tspan fill="#676767"># Use Safari browser impersonation</tspan>
-</text><text x="20.00px" y="589.40px" xml:space="preserve">  waf-scraper -b safari https://example.com
-</text><text x="20.00px" y="606.20px" xml:space="preserve">
-</text><text x="20.00px" y="623.00px" xml:space="preserve">  <tspan fill="#676767"># Save as Markdown</tspan>
-</text><text x="20.00px" y="639.80px" xml:space="preserve">  waf-scraper -f markdown -o thread.md https://reddit.com/r/...
-</text><text x="20.00px" y="656.60px" xml:space="preserve">
-</text><text x="20.00px" y="673.40px" xml:space="preserve">Supported browsers:
-</text><text x="20.00px" y="690.20px" xml:space="preserve">  chrome <tspan fill="#ff7f83">(</tspan>default<tspan fill="#ff7f83">)</tspan>, safari, firefox, edge, and specific versions like
-</text><text x="20.00px" y="707.00px" xml:space="preserve">  chrome124, safari18_0, firefox109, etc.
-</text><text x="20.00px" y="723.80px" xml:space="preserve">        
+</text><text x="20.00px" y="236.60px" xml:space="preserve">  -h, --help            show this help message and exit
+</text><text x="20.00px" y="253.40px" xml:space="preserve">  -b, --browser BROWSER
+</text><text x="20.00px" y="270.20px" xml:space="preserve">                        Browser to impersonate (default: chrome)
+</text><text x="20.00px" y="287.00px" xml:space="preserve">  -f, --format {rich,json,text,markdown}
+</text><text x="20.00px" y="303.80px" xml:space="preserve">                        Output format (default: rich)
+</text><text x="20.00px" y="320.60px" xml:space="preserve">  -o, --output FILE     Output file (default: stdout)
+</text><text x="20.00px" y="337.40px" xml:space="preserve">  -t, --timeout TIMEOUT
+</text><text x="20.00px" y="354.20px" xml:space="preserve">                        Request timeout in seconds (default: 30)
+</text><text x="20.00px" y="371.00px" xml:space="preserve">  --verbose             Show detailed progress messages
+</text><text x="20.00px" y="387.80px" xml:space="preserve">  --list-browsers       List supported browsers and exit
+</text><text x="20.00px" y="404.60px" xml:space="preserve">  --version             show program&apos;s version number and exit
+</text><text x="20.00px" y="421.40px" xml:space="preserve">
+</text><text x="20.00px" y="438.20px" xml:space="preserve">Examples:
+</text><text x="20.00px" y="455.00px" xml:space="preserve">  # Scrape Reddit thread with rich formatting
+</text><text x="20.00px" y="471.80px" xml:space="preserve">  waf-scraper https://www.reddit.com/r/LocalLLaMA/comments/1oe0y11/...
+</text><text x="20.00px" y="488.60px" xml:space="preserve">
+</text><text x="20.00px" y="505.40px" xml:space="preserve">  # Scrape and save as JSON
+</text><text x="20.00px" y="522.20px" xml:space="preserve">  waf-scraper -f json -o output.json https://example.com
+</text><text x="20.00px" y="539.00px" xml:space="preserve">
+</text><text x="20.00px" y="555.80px" xml:space="preserve">  # Use Safari browser impersonation
+</text><text x="20.00px" y="572.60px" xml:space="preserve">  waf-scraper -b safari https://example.com
+</text><text x="20.00px" y="589.40px" xml:space="preserve">
+</text><text x="20.00px" y="606.20px" xml:space="preserve">  # Save as Markdown
+</text><text x="20.00px" y="623.00px" xml:space="preserve">  waf-scraper -f markdown -o thread.md https://reddit.com/r/...
+</text><text x="20.00px" y="639.80px" xml:space="preserve">
+</text><text x="20.00px" y="656.60px" xml:space="preserve">Supported browsers:
+</text><text x="20.00px" y="673.40px" xml:space="preserve">  chrome (default), safari, firefox, edge, and specific versions like
+</text><text x="20.00px" y="690.20px" xml:space="preserve">  chrome124, safari18_0, firefox109, etc.
+</text><text x="20.00px" y="707.00px" xml:space="preserve">        
 </text>
 </g>
 <svg x="0.00px" y="0.00px"><circle cx="13.50" cy="12.00" r="5.50" fill="#FF5A54"/><circle cx="32.50" cy="12.00" r="5.50" fill="#E6BF29"/><circle cx="51.50" cy="12.00" r="5.50" fill="#52C12B"/></svg></svg>
