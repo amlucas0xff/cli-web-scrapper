@@ -33,6 +33,35 @@ class RedditThread:
     comments: List[RedditComment]
 
 
+@dataclass
+class YouTubeComment:
+    """Represents a YouTube comment."""
+
+    author: str
+    text: str
+    likes: Optional[str]
+    timestamp: Optional[str]
+    is_pinned: bool = False
+    is_hearted: bool = False
+
+
+@dataclass
+class YouTubeVideo:
+    """Represents a YouTube video."""
+
+    title: str
+    channel_name: str
+    description: str
+    description_links: List[Dict[str, str]]  # [{"text": "...", "url": "..."}]
+    view_count: Optional[str]
+    upload_date: Optional[str]
+    like_count: Optional[str]
+    video_id: str
+    url: str
+    comments: Optional[List[YouTubeComment]] = None
+    comments_truncated: bool = False
+
+
 class RedditParser:
     """Parser for Reddit threads."""
 
@@ -159,13 +188,14 @@ class RedditParser:
     def _extract_post_text(self) -> Optional[str]:
         """Extract post text content."""
         # Try to find post content (old and new Reddit)
+        # IMPORTANT: Must exclude sidebar content which also has usertext-body class
         text_selectors = [
-            'div.usertext-body',  # Old Reddit
-            'div.md',  # Old Reddit markdown content
-            '[slot="text-body"]',
-            'div[data-testid="post-content"]',
-            'shreddit-post div[slot="text-body"]',
+            'div.expando div.usertext-body',  # Old Reddit - post content (not sidebar)
+            'div.expando div.md',  # Old Reddit markdown content in post
             'form.usertext div.md',  # Old Reddit specific
+            '[slot="text-body"]',  # New Reddit
+            'div[data-testid="post-content"]',  # New Reddit
+            'shreddit-post div[slot="text-body"]',  # New Reddit
         ]
 
         for selector in text_selectors:
@@ -482,3 +512,506 @@ class TrafilaturaParser:
             return result.get("links", [])
 
         return []
+
+
+class YouTubeParser:
+    """Parser for YouTube videos."""
+
+    def __init__(self, html_content: str, scraper=None):
+        """
+        Initialize parser with HTML content.
+
+        Args:
+            html_content: Raw HTML from YouTube
+            scraper: WAFBypassScraper instance for making additional requests
+        """
+        self.html_content = html_content
+        self.scraper = scraper
+        self.yt_initial_data = None
+        self._extract_initial_data()
+
+    def _extract_initial_data(self) -> None:
+        """Extract ytInitialData JSON from HTML."""
+        pattern = r'var ytInitialData = ({.*?});'
+        match = re.search(pattern, self.html_content, re.DOTALL)
+
+        if match:
+            try:
+                self.yt_initial_data = json.loads(match.group(1))
+            except json.JSONDecodeError as e:
+                print(f"Warning: Failed to parse ytInitialData: {e}", file=sys.stderr)
+                self.yt_initial_data = None
+        else:
+            print("Warning: Could not find ytInitialData in HTML", file=sys.stderr)
+
+    def parse_video(self, url: str, include_comments: bool = False,
+                   comment_char_limit: int = 50000) -> YouTubeVideo:
+        """
+        Parse YouTube video from HTML.
+
+        Args:
+            url: Original URL of the video
+            include_comments: Whether to fetch and include comments
+            comment_char_limit: Maximum characters for all comments combined
+
+        Returns:
+            Parsed YouTubeVideo object
+        """
+        if not self.yt_initial_data:
+            raise ValueError("Failed to extract YouTube data from page")
+
+        video_id = self._extract_video_id(url)
+        video_details = self._get_video_details()
+
+        title = self._extract_title(video_details)
+        channel_name = self._extract_channel_name()
+        description = self._extract_description()
+        description_links = self._extract_description_links()
+        view_count = self._extract_view_count(video_details)
+        upload_date = self._extract_upload_date(video_details)
+        like_count = self._extract_like_count()
+
+        comments = None
+        comments_truncated = False
+        if include_comments and self.scraper:
+            comments, comments_truncated = self._extract_comments(
+                video_id, comment_char_limit
+            )
+
+        return YouTubeVideo(
+            title=title,
+            channel_name=channel_name,
+            description=description,
+            description_links=description_links,
+            view_count=view_count,
+            upload_date=upload_date,
+            like_count=like_count,
+            video_id=video_id,
+            url=url,
+            comments=comments,
+            comments_truncated=comments_truncated,
+        )
+
+    def _extract_video_id(self, url: str) -> str:
+        """Extract video ID from YouTube URL."""
+        patterns = [
+            r'(?:v=|/)([0-9A-Za-z_-]{11}).*',
+            r'youtu\.be/([0-9A-Za-z_-]{11})',
+            r'embed/([0-9A-Za-z_-]{11})',
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
+
+        raise ValueError(f"Could not extract video ID from URL: {url}")
+
+    def _get_video_details(self) -> Dict[str, Any]:
+        """Get video details from ytInitialData."""
+        try:
+            contents = (
+                self.yt_initial_data
+                .get("contents", {})
+                .get("twoColumnWatchNextResults", {})
+                .get("results", {})
+                .get("results", {})
+                .get("contents", [])
+            )
+
+            for item in contents:
+                if "videoPrimaryInfoRenderer" in item:
+                    return item["videoPrimaryInfoRenderer"]
+
+            return {}
+        except (AttributeError, KeyError, TypeError):
+            return {}
+
+    def _extract_title(self, video_details: Dict[str, Any]) -> str:
+        """Extract video title."""
+        try:
+            runs = video_details.get("title", {}).get("runs", [])
+            if runs:
+                return runs[0].get("text", "Unknown Title")
+        except (KeyError, IndexError, TypeError):
+            pass
+        return "Unknown Title"
+
+    def _extract_channel_name(self) -> str:
+        """Extract channel name."""
+        try:
+            contents = (
+                self.yt_initial_data
+                .get("contents", {})
+                .get("twoColumnWatchNextResults", {})
+                .get("results", {})
+                .get("results", {})
+                .get("contents", [])
+            )
+
+            for item in contents:
+                if "videoSecondaryInfoRenderer" in item:
+                    owner = item["videoSecondaryInfoRenderer"].get("owner", {})
+                    runs = (
+                        owner.get("videoOwnerRenderer", {})
+                        .get("title", {})
+                        .get("runs", [])
+                    )
+                    if runs:
+                        return runs[0].get("text", "Unknown Channel")
+
+            return "Unknown Channel"
+        except (AttributeError, KeyError, IndexError, TypeError):
+            return "Unknown Channel"
+
+    def _extract_description(self) -> str:
+        """Extract full video description."""
+        try:
+            contents = (
+                self.yt_initial_data
+                .get("contents", {})
+                .get("twoColumnWatchNextResults", {})
+                .get("results", {})
+                .get("results", {})
+                .get("contents", [])
+            )
+
+            for item in contents:
+                if "videoSecondaryInfoRenderer" in item:
+                    description_content = (
+                        item["videoSecondaryInfoRenderer"]
+                        .get("attributedDescription", {})
+                        .get("content", "")
+                    )
+                    return description_content
+
+            return ""
+        except (AttributeError, KeyError, TypeError):
+            return ""
+
+    def _extract_description_links(self) -> List[Dict[str, str]]:
+        """Extract links from video description."""
+        from urllib.parse import unquote
+
+        links = []
+
+        try:
+            contents = (
+                self.yt_initial_data
+                .get("contents", {})
+                .get("twoColumnWatchNextResults", {})
+                .get("results", {})
+                .get("results", {})
+                .get("contents", [])
+            )
+
+            for item in contents:
+                if "videoSecondaryInfoRenderer" in item:
+                    secondary_info = item["videoSecondaryInfoRenderer"]
+                    attributed_desc = secondary_info.get("attributedDescription", {})
+                    command_runs = attributed_desc.get("commandRuns", [])
+                    desc_text = attributed_desc.get("content", "")
+
+                    for run in command_runs:
+                        start_idx = run.get("startIndex", 0)
+                        length = run.get("length", 0)
+                        link_text = desc_text[start_idx:start_idx + length] if desc_text else ""
+
+                        url = (
+                            run.get("onTap", {})
+                            .get("innertubeCommand", {})
+                            .get("urlEndpoint", {})
+                            .get("url", "")
+                        )
+
+                        if url:
+                            # Handle YouTube redirect URLs (both relative and absolute)
+                            if "/redirect?" in url or "youtube.com/redirect" in url:
+                                # Extract the actual URL from the 'q' parameter
+                                actual_url_match = re.search(r'[?&]q=([^&]+)', url)
+                                if actual_url_match:
+                                    url = unquote(actual_url_match.group(1))
+                            elif url.startswith("/"):
+                                # Handle other relative URLs
+                                url = f"https://www.youtube.com{url}"
+
+                            if not link_text:
+                                link_text = url
+
+                            links.append({
+                                "text": link_text,
+                                "url": url
+                            })
+
+            return links
+        except (AttributeError, KeyError, IndexError, TypeError):
+            return []
+
+    def _extract_view_count(self, video_details: Dict[str, Any]) -> Optional[str]:
+        """Extract view count."""
+        try:
+            view_count_text = (
+                video_details
+                .get("viewCount", {})
+                .get("videoViewCountRenderer", {})
+                .get("viewCount", {})
+                .get("simpleText", None)
+            )
+            return view_count_text
+        except (AttributeError, KeyError, TypeError):
+            return None
+
+    def _extract_upload_date(self, video_details: Dict[str, Any]) -> Optional[str]:
+        """Extract upload date."""
+        try:
+            date_text = (
+                video_details
+                .get("dateText", {})
+                .get("simpleText", None)
+            )
+            return date_text
+        except (AttributeError, KeyError, TypeError):
+            return None
+
+    def _extract_like_count(self) -> Optional[str]:
+        """Extract like count."""
+        try:
+            contents = (
+                self.yt_initial_data
+                .get("contents", {})
+                .get("twoColumnWatchNextResults", {})
+                .get("results", {})
+                .get("results", {})
+                .get("contents", [])
+            )
+
+            for item in contents:
+                if "videoPrimaryInfoRenderer" in item:
+                    buttons = (
+                        item["videoPrimaryInfoRenderer"]
+                        .get("videoActions", {})
+                        .get("menuRenderer", {})
+                        .get("topLevelButtons", [])
+                    )
+
+                    for button in buttons:
+                        if "segmentedLikeDislikeButtonRenderer" in button:
+                            like_button = (
+                                button["segmentedLikeDislikeButtonRenderer"]
+                                .get("likeButton", {})
+                                .get("toggleButtonRenderer", {})
+                            )
+
+                            label = (
+                                like_button
+                                .get("defaultText", {})
+                                .get("accessibility", {})
+                                .get("accessibilityData", {})
+                                .get("label", "")
+                            )
+
+                            if label:
+                                match = re.search(r'([\d,KMB]+)\s*like', label, re.IGNORECASE)
+                                if match:
+                                    return match.group(1)
+
+            return None
+        except (AttributeError, KeyError, IndexError, TypeError):
+            return None
+
+    def _extract_comments(
+        self, video_id: str, char_limit: int
+    ) -> tuple:
+        """
+        Extract comments by making additional API call.
+
+        Args:
+            video_id: YouTube video ID
+            char_limit: Maximum characters for all comments combined
+
+        Returns:
+            Tuple of (comments list, truncated flag)
+        """
+        if not self.scraper:
+            return None, False
+
+        try:
+            continuation_token = self._extract_continuation_token()
+
+            if not continuation_token:
+                print("Warning: Could not find continuation token for comments", file=sys.stderr)
+                return None, False
+
+            comments_data = self._fetch_comments_api(continuation_token)
+
+            if not comments_data:
+                return None, False
+
+            comments = []
+            total_chars = 0
+            truncated = False
+
+            comment_threads = self._extract_comment_threads(comments_data)
+
+            for thread in comment_threads:
+                comment = self._parse_comment_thread(thread)
+                if comment:
+                    comment_text_len = len(comment.text)
+
+                    if total_chars + comment_text_len > char_limit:
+                        truncated = True
+                        break
+
+                    comments.append(comment)
+                    total_chars += comment_text_len
+
+            return comments if comments else None, truncated
+
+        except Exception as e:
+            print(f"Warning: Failed to extract comments: {type(e).__name__}: {e}", file=sys.stderr)
+            return None, False
+
+    def _extract_continuation_token(self) -> Optional[str]:
+        """Extract continuation token for comments API."""
+        try:
+            contents = (
+                self.yt_initial_data
+                .get("contents", {})
+                .get("twoColumnWatchNextResults", {})
+                .get("results", {})
+                .get("results", {})
+                .get("contents", [])
+            )
+
+            for item in contents:
+                if "itemSectionRenderer" in item:
+                    section = item["itemSectionRenderer"]
+                    contents_list = section.get("contents", [])
+
+                    for content in contents_list:
+                        if "continuationItemRenderer" in content:
+                            token = (
+                                content["continuationItemRenderer"]
+                                .get("continuationEndpoint", {})
+                                .get("continuationCommand", {})
+                                .get("token", None)
+                            )
+                            if token:
+                                return token
+
+            return None
+        except (AttributeError, KeyError, TypeError):
+            return None
+
+    def _fetch_comments_api(self, continuation_token: str) -> Optional[Dict[str, Any]]:
+        """Fetch comments from YouTube API."""
+        try:
+            from curl_cffi import requests
+
+            api_url = "https://www.youtube.com/youtubei/v1/next"
+
+            payload = {
+                "continuation": continuation_token,
+                "context": {
+                    "client": {
+                        "clientName": "WEB",
+                        "clientVersion": "2.20231120.00.00",
+                    }
+                }
+            }
+
+            response = requests.post(
+                api_url,
+                json=payload,
+                impersonate=self.scraper.browser,
+                timeout=self.scraper.timeout,
+            )
+
+            response.raise_for_status()
+            return response.json()
+
+        except Exception as e:
+            print(f"Warning: Comments API request failed: {e}", file=sys.stderr)
+            return None
+
+    def _extract_comment_threads(self, comments_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Extract comment data from YouTube's new API format."""
+        try:
+            # YouTube now uses frameworkUpdates with entity mutations
+            mutations = (
+                comments_data
+                .get("frameworkUpdates", {})
+                .get("entityBatchUpdate", {})
+                .get("mutations", [])
+            )
+
+            # Build a map of commentId to comment data
+            comment_map = {}
+
+            for mutation in mutations:
+                payload = mutation.get("payload", {})
+
+                # Extract comment entity payload
+                if "commentEntityPayload" in payload:
+                    comment_payload = payload["commentEntityPayload"]
+                    properties = comment_payload.get("properties", {})
+                    comment_id = properties.get("commentId")
+
+                    if comment_id:
+                        comment_map[comment_id] = {
+                            "author": comment_payload.get("author", {}),
+                            "properties": properties,
+                            "toolbar": comment_payload.get("toolbar", {}),
+                        }
+
+            # Return list of comment data
+            return list(comment_map.values())
+
+        except (AttributeError, KeyError, IndexError, TypeError):
+            return []
+
+    def _parse_comment_thread(self, comment_data: Dict[str, Any]) -> Optional[YouTubeComment]:
+        """Parse a single comment from YouTube's new API format."""
+        try:
+            # Extract author information
+            author_info = comment_data.get("author", {})
+            author_name = author_info.get("displayName", "Unknown")
+
+            # Extract properties
+            properties = comment_data.get("properties", {})
+
+            # Extract comment text
+            content_data = properties.get("content", {})
+            text = content_data.get("content", "")
+
+            # Extract timestamp
+            published_time = properties.get("publishedTime", None)
+
+            # Extract toolbar information
+            toolbar = comment_data.get("toolbar", {})
+
+            # Get like count (try both liked and not-liked states)
+            like_count = toolbar.get("likeCountNotliked", toolbar.get("likeCountLiked", None))
+
+            # Check if hearted by creator
+            is_hearted = "heartActiveTooltip" in toolbar
+
+            # Check if pinned (pinned comments usually appear first in reply level 0)
+            # For now, we'll assume not pinned as this info isn't clearly in the new format
+            is_pinned = False
+
+            if not text:
+                return None
+
+            return YouTubeComment(
+                author=author_name,
+                text=text,
+                likes=like_count,
+                timestamp=published_time,
+                is_pinned=is_pinned,
+                is_hearted=is_hearted,
+            )
+
+        except (AttributeError, KeyError, IndexError, TypeError) as e:
+            print(f"Warning: Failed to parse comment: {e}", file=sys.stderr)
+            return None
