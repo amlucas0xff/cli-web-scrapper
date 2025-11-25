@@ -107,11 +107,11 @@ cli-web-scrapper --list-browsers
 
 **Get Help**:
 
-![CLI Help](docs/images/cli-help.svg)
+![CLI Help](docs/images/cli-help.png)
 
 **Reddit Scraping with Syntax Highlighting** (r/LocalLLaMA with bat):
 
-![Markdown Output](docs/images/markdown-output.svg)
+![Markdown Output](docs/images/markdown-output.png)
 
 Demonstrates WAF bypass and specialized Reddit parsing extracting post metadata, content, and structure.
 
