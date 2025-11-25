@@ -7,6 +7,7 @@ A Python CLI tool for scraping WAF and Bot Management protected websites using i
 - **WAF Bypass**: Browser fingerprint impersonation via `curl_cffi` to bypass Cloudflare, DataDome, and other protections
 - **Intelligent Content Extraction**: Uses Trafilatura to extract clean content, removing navigation, ads, and boilerplate
 - **Reddit Specialization**: Dedicated parser for Reddit threads with comments extraction
+- **YouTube Support**: Extract video metadata, full descriptions with links, and optional comments
 - **Multiple Output Formats**: Rich console, JSON, Plain text, Markdown
 - **Metadata Extraction**: Automatically extracts title, author, date, description, and language
 - **Link Preservation**: Converts relative URLs to absolute URLs
@@ -114,6 +115,22 @@ cli-web-scrapper --list-browsers
 
 Demonstrates WAF bypass and specialized Reddit parsing extracting post metadata, content, and structure.
 
+**YouTube Videos**:
+
+```bash
+# Extract video metadata and description
+cli-web-scrapper https://youtube.com/watch?v=VIDEO_ID -f markdown
+
+# Include comments (requires additional API call)
+cli-web-scrapper --comments https://youtube.com/watch?v=VIDEO_ID
+
+# Limit comment characters to avoid excessive data
+cli-web-scrapper --comments --comment-limit 10000 https://youtube.com/watch?v=VIDEO_ID
+
+# Save video details as JSON
+cli-web-scrapper -f json -o video.json https://youtube.com/watch?v=VIDEO_ID
+```
+
 **Quick Usage Examples**:
 
 ```bash
@@ -154,6 +171,8 @@ options:
   -t TIMEOUT, --timeout TIMEOUT
                         Request timeout in seconds (default: 30)
   --verbose             Show detailed progress messages
+  --comments            Include comments for YouTube videos (requires additional API call)
+  --comment-limit CHARS Maximum characters for YouTube comments (default: 50000)
   --list-browsers       List supported browsers and exit
   --version             show program's version number and exit
 ```
@@ -219,10 +238,43 @@ URL → curl_cffi (bypass WAF) → HTML → Trafilatura (extract content) → Fo
 Main content with formatting, links, and structure preserved...
 ```
 
+### YouTube Format
+```markdown
+# Video Title
+
+**Channel:** Channel Name
+**Views:** 1.2M views
+**Likes:** 50K
+**Uploaded:** Jan 1, 2024
+**Video ID:** `dQw4w9WgXcQ`
+**URL:** https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+## Description
+
+Full video description with all text preserved...
+
+## Links in Description (16)
+
+1. [Link Text](https://actual-url.com)
+2. [Another Link](https://another-url.com)
+
+## Comments (50) [TRUNCATED]
+
+### Comment 1
+
+**Author:** username
+**Badges:** PINNED, HEARTED
+**Likes:** 123
+**Posted:** 2 days ago
+
+Comment text here...
+```
+
 ## Use Cases
 
 - **Documentation Archiving**: Save online documentation as clean markdown files
 - **Reddit Analysis**: Extract Reddit threads with comments for analysis
+- **YouTube Archival**: Save video descriptions, links, and comments for research or documentation
 - **Research**: Collect articles from paywalled or protected sites
 - **Content Aggregation**: Scrape multiple sources into structured JSON
 - **Knowledge Base**: Build offline documentation from various sources

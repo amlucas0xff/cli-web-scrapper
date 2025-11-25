@@ -8,7 +8,7 @@ from typing import Optional
 from curl_cffi.requests import RequestsError
 
 from .scraper import WAFBypassScraper
-from .parsers import RedditParser, GenericParser, TrafilaturaParser
+from .parsers import RedditParser, GenericParser, TrafilaturaParser, YouTubeParser
 from .formatters import (
     JSONFormatter,
     PlainTextFormatter,
@@ -22,6 +22,17 @@ def is_reddit_url(url: str) -> bool:
     return "reddit.com" in url
 
 
+def is_youtube_url(url: str) -> bool:
+    """Check if URL is a YouTube URL."""
+    youtube_domains = [
+        "youtube.com",
+        "youtu.be",
+        "m.youtube.com",
+        "www.youtube.com",
+    ]
+    return any(domain in url for domain in youtube_domains)
+
+
 def scrape_url(
     url: str,
     browser: str = "chrome",
@@ -29,6 +40,8 @@ def scrape_url(
     output_file: Optional[str] = None,
     timeout: int = 30,
     verbose: bool = False,
+    include_comments: bool = False,
+    comment_char_limit: int = 50000,
 ) -> None:
     """
     Scrape a URL and output the content.
@@ -59,6 +72,15 @@ def scrape_url(
                 print("Parsing Reddit content...", file=sys.stderr)
             parser = RedditParser(html_content)
             data = parser.parse_thread(url)
+        elif is_youtube_url(url):
+            if verbose:
+                print("Parsing YouTube video...", file=sys.stderr)
+            parser = YouTubeParser(html_content, scraper=scraper)
+            data = parser.parse_video(
+                url,
+                include_comments=include_comments,
+                comment_char_limit=comment_char_limit
+            )
         else:
             if verbose:
                 print("Parsing generic content with Trafilatura...", file=sys.stderr)
@@ -118,6 +140,12 @@ Examples:
   # Scrape Reddit thread with rich formatting
   waf-scraper https://www.reddit.com/r/LocalLLaMA/comments/1oe0y11/...
 
+  # Scrape YouTube video with description and links
+  waf-scraper https://youtube.com/watch?v=VIDEO_ID
+
+  # Scrape YouTube video with comments
+  waf-scraper --comments https://youtube.com/watch?v=VIDEO_ID
+
   # Scrape and save as JSON
   waf-scraper -f json -o output.json https://example.com
 
@@ -169,6 +197,20 @@ Supported browsers:
     )
 
     parser.add_argument(
+        "--comments",
+        action="store_true",
+        help="Include comments for YouTube videos (requires additional API call)",
+    )
+
+    parser.add_argument(
+        "--comment-limit",
+        type=int,
+        default=50000,
+        help="Maximum characters for YouTube comments (default: 50000)",
+        metavar="CHARS",
+    )
+
+    parser.add_argument(
         "--list-browsers",
         action="store_true",
         help="List supported browsers and exit",
@@ -199,6 +241,8 @@ Supported browsers:
         output_file=args.output,
         timeout=args.timeout,
         verbose=args.verbose,
+        include_comments=args.comments,
+        comment_char_limit=args.comment_limit,
     )
 
 

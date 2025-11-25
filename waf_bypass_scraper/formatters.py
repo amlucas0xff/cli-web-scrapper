@@ -7,7 +7,7 @@ from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.text import Text
 
-from .parsers import RedditThread, TrafilaturaContent
+from .parsers import RedditThread, TrafilaturaContent, YouTubeVideo
 
 
 class OutputFormatter:
@@ -49,6 +49,8 @@ class PlainTextFormatter(OutputFormatter):
             return self._format_reddit_thread(data)
         elif isinstance(data, TrafilaturaContent):
             return self._format_trafilatura_content(data)
+        elif isinstance(data, YouTubeVideo):
+            return self._format_youtube_video(data)
         return str(data)
 
     def _format_reddit_thread(self, thread: RedditThread) -> str:
@@ -112,6 +114,58 @@ class PlainTextFormatter(OutputFormatter):
 
         return "\n".join(lines)
 
+    def _format_youtube_video(self, video: YouTubeVideo) -> str:
+        """Format YouTube video as plain text."""
+        lines = []
+        lines.append("=" * 80)
+        lines.append(f"TITLE: {video.title}")
+        lines.append(f"CHANNEL: {video.channel_name}")
+        if video.view_count:
+            lines.append(f"VIEWS: {video.view_count}")
+        if video.upload_date:
+            lines.append(f"UPLOADED: {video.upload_date}")
+        if video.like_count:
+            lines.append(f"LIKES: {video.like_count}")
+        lines.append(f"VIDEO ID: {video.video_id}")
+        lines.append(f"URL: {video.url}")
+        lines.append("=" * 80)
+
+        if video.description:
+            lines.append("\nDESCRIPTION:")
+            lines.append("-" * 80)
+            lines.append(video.description)
+            lines.append("-" * 80)
+
+        if video.description_links:
+            lines.append(f"\nLINKS IN DESCRIPTION ({len(video.description_links)}):")
+            lines.append("-" * 80)
+            for i, link in enumerate(video.description_links, 1):
+                lines.append(f"[{i}] {link['text']}")
+                lines.append(f"    {link['url']}")
+            lines.append("-" * 80)
+
+        if video.comments:
+            lines.append(f"\nCOMMENTS ({len(video.comments)}):")
+            if video.comments_truncated:
+                lines.append("(Truncated due to character limit)")
+            lines.append("=" * 80)
+
+            for i, comment in enumerate(video.comments, 1):
+                lines.append(f"\n[{i}] {comment.author}")
+                if comment.is_pinned:
+                    lines.append("(PINNED)")
+                if comment.is_hearted:
+                    lines.append("(HEARTED)")
+                if comment.likes:
+                    lines.append(f"Likes: {comment.likes}")
+                if comment.timestamp:
+                    lines.append(f"Time: {comment.timestamp}")
+                lines.append("-" * 80)
+                lines.append(comment.text)
+                lines.append("-" * 80)
+
+        return "\n".join(lines)
+
 
 class RichFormatter(OutputFormatter):
     """Rich formatted console output."""
@@ -126,6 +180,8 @@ class RichFormatter(OutputFormatter):
             self._format_reddit_thread(data)
         elif isinstance(data, TrafilaturaContent):
             self._format_trafilatura_content(data)
+        elif isinstance(data, YouTubeVideo):
+            self._format_youtube_video(data)
         else:
             self.console.print(str(data))
 
@@ -206,6 +262,79 @@ class RichFormatter(OutputFormatter):
             self.console.print("\n[bold]Content:[/bold]")
             self.console.print(Panel(content.text, border_style="dim"))
 
+    def _format_youtube_video(self, video: YouTubeVideo) -> None:
+        """Format YouTube video with Rich formatting."""
+        # Video header
+        header_text = Text()
+        header_text.append(video.title, style="bold cyan")
+        header_text.append(f"\n\n{video.channel_name}", style="blue")
+
+        metadata_parts = []
+        if video.view_count:
+            metadata_parts.append(f"{video.view_count}")
+        if video.like_count:
+            metadata_parts.append(f"{video.like_count} likes")
+        if video.upload_date:
+            metadata_parts.append(video.upload_date)
+
+        if metadata_parts:
+            header_text.append("\n", style="dim")
+            header_text.append(" • ".join(metadata_parts), style="yellow")
+
+        self.console.print(
+            Panel(header_text, title="YouTube Video", border_style="red")
+        )
+
+        # Description
+        if video.description:
+            self.console.print("\n[bold]Description:[/bold]")
+            self.console.print(Panel(video.description, border_style="dim"))
+
+        # Description links
+        if video.description_links:
+            self.console.print(f"\n[bold]Links in Description ({len(video.description_links)}):[/bold]\n")
+            for i, link in enumerate(video.description_links, 1):
+                link_text = Text()
+                link_text.append(f"[{i}] ", style="dim")
+                link_text.append(link['text'], style="cyan")
+                link_text.append(f"\n    ", style="dim")
+                link_text.append(link['url'], style="blue underline")
+                self.console.print(link_text)
+
+        # Comments
+        if video.comments:
+            comment_header = f"Comments ({len(video.comments)})"
+            if video.comments_truncated:
+                comment_header += " [TRUNCATED]"
+            self.console.print(f"\n[bold]{comment_header}:[/bold]\n")
+
+            for i, comment in enumerate(video.comments, 1):
+                # Comment header
+                comment_header_text = Text()
+                comment_header_text.append(f"[{i}] ", style="dim")
+                comment_header_text.append(comment.author, style="green")
+
+                badges = []
+                if comment.is_pinned:
+                    badges.append("PINNED")
+                if comment.is_hearted:
+                    badges.append("HEARTED")
+
+                if badges:
+                    comment_header_text.append(f" [{', '.join(badges)}]", style="yellow bold")
+
+                if comment.likes:
+                    comment_header_text.append(f" • {comment.likes} likes", style="yellow")
+                if comment.timestamp:
+                    comment_header_text.append(f" • {comment.timestamp}", style="dim")
+
+                # Comment body
+                self.console.print(comment_header_text)
+                self.console.print(
+                    Panel(comment.text, border_style="dim", padding=(0, 2))
+                )
+                self.console.print()
+
 
 class MarkdownFormatter(OutputFormatter):
     """Markdown output formatter."""
@@ -216,6 +345,8 @@ class MarkdownFormatter(OutputFormatter):
             return self._format_reddit_thread(data)
         elif isinstance(data, TrafilaturaContent):
             return self._format_trafilatura_content(data)
+        elif isinstance(data, YouTubeVideo):
+            return self._format_youtube_video(data)
         return str(data)
 
     def _format_reddit_thread(self, thread: RedditThread) -> str:
@@ -285,5 +416,65 @@ class MarkdownFormatter(OutputFormatter):
             lines.append(content.markdown)
         elif content.text:
             lines.append(content.text)
+
+        return "\n".join(lines)
+
+    def _format_youtube_video(self, video: YouTubeVideo) -> str:
+        """Format YouTube video as Markdown."""
+        lines = []
+
+        # Video header
+        lines.append(f"# {video.title}\n")
+        lines.append(f"**Channel:** {video.channel_name}  ")
+        if video.view_count:
+            lines.append(f"**Views:** {video.view_count}  ")
+        if video.like_count:
+            lines.append(f"**Likes:** {video.like_count}  ")
+        if video.upload_date:
+            lines.append(f"**Uploaded:** {video.upload_date}  ")
+        lines.append(f"**Video ID:** `{video.video_id}`  ")
+        lines.append(f"**URL:** {video.url}\n")
+
+        # Description
+        if video.description:
+            lines.append("## Description\n")
+            lines.append(video.description)
+            lines.append("")
+
+        # Description links
+        if video.description_links:
+            lines.append(f"## Links in Description ({len(video.description_links)})\n")
+            for i, link in enumerate(video.description_links, 1):
+                # Escape markdown in link text
+                link_text = link['text'].replace('[', '\\[').replace(']', '\\]')
+                lines.append(f"{i}. [{link_text}]({link['url']})")
+            lines.append("")
+
+        # Comments
+        if video.comments:
+            comment_header = f"## Comments ({len(video.comments)})"
+            if video.comments_truncated:
+                comment_header += " [TRUNCATED]"
+            lines.append(f"{comment_header}\n")
+
+            for i, comment in enumerate(video.comments, 1):
+                lines.append(f"### Comment {i}\n")
+
+                badges = []
+                if comment.is_pinned:
+                    badges.append("PINNED")
+                if comment.is_hearted:
+                    badges.append("HEARTED")
+
+                lines.append(f"**Author:** {comment.author}  ")
+                if badges:
+                    lines.append(f"**Badges:** {', '.join(badges)}  ")
+                if comment.likes:
+                    lines.append(f"**Likes:** {comment.likes}  ")
+                if comment.timestamp:
+                    lines.append(f"**Posted:** {comment.timestamp}  ")
+                lines.append("")
+                lines.append(comment.text)
+                lines.append("\n---\n")
 
         return "\n".join(lines)
