@@ -480,13 +480,14 @@ class TrafilaturaParser:
         )
 
         if result:
+            # bare_extraction returns a Document object, not a dict
             return {
-                "title": result.get("title"),
-                "author": result.get("author"),
-                "date": result.get("date"),
-                "url": result.get("url"),
-                "description": result.get("description"),
-                "language": result.get("language"),
+                "title": getattr(result, "title", None),
+                "author": getattr(result, "author", None),
+                "date": getattr(result, "date", None),
+                "url": getattr(result, "url", None),
+                "description": getattr(result, "description", None),
+                "language": getattr(result, "language", None),
             }
 
         return {
@@ -508,8 +509,10 @@ class TrafilaturaParser:
             url=self.url,
         )
 
-        if result and "links" in result:
-            return result.get("links", [])
+        if result:
+            # bare_extraction returns a Document object, not a dict
+            links = getattr(result, "links", None)
+            return links if links else []
 
         return []
 
