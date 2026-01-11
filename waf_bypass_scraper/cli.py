@@ -14,6 +14,7 @@ from .formatters import (
     PlainTextFormatter,
     RichFormatter,
     MarkdownFormatter,
+    TOONFormatter,
 )
 
 
@@ -118,6 +119,15 @@ def scrape_url(
                     print(f"\nSaved to: {output_file}", file=sys.stderr)
             else:
                 print(output)
+        elif output_format == "toon":
+            formatter = TOONFormatter()
+            output = formatter.format(data)
+            if output_file:
+                Path(output_file).write_text(output, encoding="utf-8")
+                if verbose:
+                    print(f"\nSaved to: {output_file}", file=sys.stderr)
+            else:
+                print(output)
 
     except RequestsError as e:
         print(f"Network error: {e}", file=sys.stderr)
@@ -173,7 +183,7 @@ Supported browsers:
     parser.add_argument(
         "-f",
         "--format",
-        choices=["rich", "json", "text", "markdown"],
+        choices=["rich", "json", "text", "markdown", "toon"],
         default="rich",
         help="Output format (default: rich)",
     )

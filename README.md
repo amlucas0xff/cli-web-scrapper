@@ -8,7 +8,7 @@ A Python CLI tool for scraping WAF and Bot Management protected websites using i
 - **Intelligent Content Extraction**: Uses Trafilatura to extract clean content, removing navigation, ads, and boilerplate
 - **Reddit Specialization**: Dedicated parser for Reddit threads with comments extraction
 - **YouTube Support**: Extract video metadata, full descriptions with links, and optional comments
-- **Multiple Output Formats**: Rich console, JSON, Plain text, Markdown
+- **Multiple Output Formats**: Rich console, JSON, Plain text, Markdown, TOON (token-optimized for LLMs)
 - **Metadata Extraction**: Automatically extracts title, author, date, description, and language
 - **Link Preservation**: Converts relative URLs to absolute URLs
 
@@ -88,6 +88,16 @@ cli-web-scrapper -f json -o data.json https://example.com
 cli-web-scrapper -f text https://example.com
 ```
 
+**TOON** - Token-optimized format for LLM context (20-50% fewer tokens than JSON):
+
+```bash
+# Output TOON format
+cli-web-scrapper -f toon https://example.com
+
+# Pipe to LLM
+cli-web-scrapper -f toon https://reddit.com/r/LocalLLaMA/... | llm "summarize this thread"
+```
+
 ### Browser Impersonation
 
 Use different browsers to bypass specific protections:
@@ -153,7 +163,7 @@ cli-web-scrapper --verbose -f text https://blog.example.com/article
 ## Command-Line Options
 
 ```
-usage: cli-web-scrapper [-h] [-b BROWSER] [-f {rich,json,text,markdown}]
+usage: cli-web-scrapper [-h] [-b BROWSER] [-f {rich,json,text,markdown,toon}]
                         [-o FILE] [-t TIMEOUT] [--verbose] [--list-browsers]
                         [--version] url
 
@@ -164,7 +174,7 @@ options:
   -h, --help            show this help message and exit
   -b BROWSER, --browser BROWSER
                         Browser to impersonate (default: chrome)
-  -f {rich,json,text,markdown}, --format {rich,json,text,markdown}
+  -f {rich,json,text,markdown,toon}, --format {rich,json,text,markdown,toon}
                         Output format (default: rich)
   -o FILE, --output FILE
                         Output file (default: stdout)
@@ -270,11 +280,32 @@ Full video description with all text preserved...
 Comment text here...
 ```
 
+### TOON Format (Token-Optimized)
+
+TOON uses tab-separated values and compact notation to reduce token count for LLM consumption:
+
+```
+title: Test Thread
+author: testuser
+subreddit: LocalLLaMA
+score: "100"
+url: "https://reddit.com/r/LocalLLaMA/..."
+comments[3	]{author	text	score	timestamp}:
+  user1	Great post!	"50"	1 hour ago
+  user2	Thanks for sharing	"25"	2 hours ago
+  user3	Very helpful	"10"	3 hours ago
+```
+
+Token savings vary by content type:
+- **Structured data** (Reddit, YouTube with comments): 20-50% fewer tokens
+- **Text-heavy content** (articles, Wikipedia): minimal savings
+
 ## Use Cases
 
 - **Documentation Archiving**: Save online documentation as clean markdown files
 - **Reddit Analysis**: Extract Reddit threads with comments for analysis
 - **YouTube Archival**: Save video descriptions, links, and comments for research or documentation
+- **LLM Context Injection**: Use TOON format to feed scraped content to LLMs with minimal token usage
 - **Research**: Collect articles from paywalled or protected sites
 - **Content Aggregation**: Scrape multiple sources into structured JSON
 - **Knowledge Base**: Build offline documentation from various sources

@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.text import Text
+from toon import ToonEncoder
 
 from .parsers import RedditThread, TrafilaturaContent, YouTubeVideo
 
@@ -478,3 +479,29 @@ class MarkdownFormatter(OutputFormatter):
                 lines.append("\n---\n")
 
         return "\n".join(lines)
+
+
+class TOONFormatter(OutputFormatter):
+    """TOON output formatter for minimal LLM token usage."""
+
+    def __init__(self, delimiter: str = "\t"):
+        """Initialize TOON encoder with tab delimiter for token efficiency."""
+        self.encoder = ToonEncoder(delimiter=delimiter)
+
+    def format(self, data: Any) -> str:
+        """Format data as TOON."""
+        if hasattr(data, "__dict__"):
+            return self.encoder.encode(self._to_dict(data))
+        return self.encoder.encode(data)
+
+    def _to_dict(self, obj: Any) -> Any:
+        """Convert object to dictionary recursively."""
+        if hasattr(obj, "__dict__"):
+            result = {}
+            for key, value in obj.__dict__.items():
+                if isinstance(value, list):
+                    result[key] = [self._to_dict(item) for item in value]
+                else:
+                    result[key] = self._to_dict(value)
+            return result
+        return obj
