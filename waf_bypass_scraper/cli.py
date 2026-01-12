@@ -7,6 +7,7 @@ from typing import Optional
 
 from curl_cffi.requests import RequestsError
 
+from . import __version__
 from .scraper import WAFBypassScraper
 from .parsers import RedditParser, GenericParser, TrafilaturaParser, YouTubeParser
 from .formatters import (
@@ -227,7 +228,7 @@ Supported browsers:
     )
 
     parser.add_argument(
-        "--version", action="version", version="waf-bypass-scraper 0.1.0"
+        "--version", action="version", version=f"waf-bypass-scraper {__version__}"
     )
 
     args = parser.parse_args()
