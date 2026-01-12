@@ -43,6 +43,8 @@ Thumbs.db
 *.md
 !README.md
 !docs/**/*.md
-!ai_docs/**/*.md
 /tmp/
 compression/
+
+# AI development docs
+ai_docs/
